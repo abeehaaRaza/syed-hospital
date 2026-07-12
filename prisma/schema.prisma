@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ===== USERS (login accounts) =====
+enum Role {
+  ADMIN
+  RECEPTIONIST
+}
+
+model User {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  email        String?   @unique
+  passwordHash String
+  fullName     String
+  role         Role
+  isActive     Boolean   @default(true)
+  lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  createdPatients Patient[]  @relation("CreatedBy")
+  updatedPatients Patient[]  @relation("UpdatedBy")
+  auditLogs       AuditLog[]
+}
+
+// ===== PATIENTS =====
+enum DepartmentType {
+  ER
+  OPD
+  IND
+}
+
+enum PatientStatus {
+  ACTIVE
+  DISCHARGED
+  ARCHIVED
+  DECEASED
+}
+
+model Patient {
+  id             String         @id @default(cuid())
+  mrNumber       String         @unique
+  fullName       String
+  age            Int
+  gender         String
+  dateOfBirth    DateTime?
+  cnicNumber     String?
+  mobile         String
+  address        String         @db.Text
+  photoUrl       String?
+  department     DepartmentType
+  registerType   String
+  patientCount   Int
+  status         PatientStatus  @default(ACTIVE)
+  isVisible      Boolean        @default(true)
+  visitDate      DateTime       @default(now())
+  visitTime      String
+  patientComment String?        @db.Text
+  createdById    String
+  createdBy      User           @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById    String?
+  updatedBy      User?          @relation("UpdatedBy", fields: [updatedById], references: [id])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  archivedAt     DateTime?
+
+  visits    Visit[]
+  documents PatientDocument[]
+
+  @@index([mrNumber])
+  @@index([department, visitDate])
+  @@index([status])
+}
+
+model Visit {
+  id           String    @id @default(cuid())
+  patientId    String
+  patient      Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  visitDate    DateTime  @default(now())
+  reason       String
+  diagnosis    String?   @db.Text
+  prescription String?   @db.Text
+  doctorNotes  String?   @db.Text
+  followUpDate DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+model PatientDocument {
+  id         String   @id @default(cuid())
+  patientId  String
+  patient    Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  fileName   String
+  fileUrl    String
+  fileType   String
+  uploadedAt DateTime @default(now())
+}
+
+// ===== MR NUMBER TRACKING =====
+model MRCounter {
+  id           String         @id @default(cuid())
+  department   DepartmentType
+  year         Int
+  month        Int
+  currentCount Int            @default(0)
+
+  @@unique([department, year, month])
+}
+
+// ===== APPOINTMENTS =====
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Appointment {
+  id            String            @id @default(cuid())
+  patientName   String
+  mobile        String
+  email         String?
+  department    String
+  doctorName    String?
+  preferredDate DateTime
+  status        AppointmentStatus @default(SCHEDULED)
+  notes         String?           @db.Text
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+// ===== AUDIT LOG (legal protection) =====
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// ===== DEPARTMENTS (public site) =====
+model Department {
+  id           String  @id @default(cuid())
+  name         String
+  slug         String  @unique
+  description  String  @db.Text
+  iconName     String?
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+}
