@@ -1,37 +1,39 @@
 import { prisma } from './prisma';
 import { DepartmentType } from '@prisma/client';
 
+// Pads a number to 3 digits: 1 → "001"
+function pad(n: number) {
+  return String(n).padStart(3, '0');
+}
+
+// Formats: MR + DEPT + DD + MM + YYYY + PCN  → e.g. MROPD08072026001
+function buildMR(department: string, date: Date, pcn: number) {
+  const dd = pad(date.getDate()).slice(-2);
+  const mm = pad(date.getMonth() + 1).slice(-2);
+  const yyyy = date.getFullYear();
+  return `MR${department}${dd}${mm}${yyyy}${pad(pcn)}`;
+}
+
 /**
- * Format per SOP: MR{DEPT}{DD}{MM}{YYYY}{PCN}
- * Example: MROPD08072026001
- * PCN resets to 1 at the start of each month, per department.
+ * Generates an MR number following the hospital policy.
+ * PCN resets to 1 each month, per department.
  */
 export async function generateMRNumber(
   department: DepartmentType,
   visitDate: Date = new Date()
 ) {
-  const day = String(visitDate.getDate()).padStart(2, '0');
-  const month = visitDate.getMonth() + 1;
   const year = visitDate.getFullYear();
-  const monthStr = String(month).padStart(2, '0');
+  const month = visitDate.getMonth() + 1;
 
-  // Atomic transaction — prevents two receptionists getting the same number
-  const counter = await prisma.$transaction(async (tx) => {
-    const existing = await tx.mRCounter.findUnique({
-      where: { department_year_month: { department, year, month } },
-    });
-    if (existing) {
-      return await tx.mRCounter.update({
-        where: { id: existing.id },
-        data: { currentCount: { increment: 1 } },
-      });
-    }
-    return await tx.mRCounter.create({
-      data: { department, year, month, currentCount: 1 },
-    });
+  // Atomic counter: increments per department, per month
+  const counter = await prisma.mRCounter.upsert({
+    where: {
+      department_year_month: { department, year, month },
+    },
+    update: { currentCount: { increment: 1 } },
+    create: { department, year, month, currentCount: 1 },
   });
 
-  const pcn = String(counter.currentCount).padStart(3, '0');
-  const mrNumber = `MR${department}${day}${monthStr}${year}${pcn}`;
+  const mrNumber = buildMR(department, visitDate, counter.currentCount);
   return { mrNumber, patientCount: counter.currentCount };
 }

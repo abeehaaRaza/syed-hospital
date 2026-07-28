@@ -47,6 +47,7 @@ model Patient {
   id             String         @id @default(cuid())
   mrNumber       String         @unique
   fullName       String
+  guardianName   String?
   age            Int
   gender         String
   dateOfBirth    DateTime?
@@ -56,12 +57,17 @@ model Patient {
   photoUrl       String?
   department     DepartmentType
   registerType   String
+  serviceRequired String?
   patientCount   Int
   status         PatientStatus  @default(ACTIVE)
   isVisible      Boolean        @default(true)
   visitDate      DateTime       @default(now())
   visitTime      String
   patientComment String?        @db.Text
+  consentGiven   Boolean        @default(false)
+  disposal       String?
+  fee            Int?
+  details        String?        @db.Text
   createdById    String
   createdBy      User           @relation("CreatedBy", fields: [createdById], references: [id])
   updatedById    String?
