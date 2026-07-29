@@ -28,7 +28,7 @@ export default function Hero() {
 
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
             <Link
-              href="/#book"
+              href="/contact"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-[#2E5FA3] hover:bg-[#264F87] text-white font-medium px-7 py-3.5 transition-all duration-300 hover:shadow-[0_12px_30px_rgba(46,95,163,0.35)] hover:-translate-y-0.5"
             >
               <Calendar className="h-5 w-5" />
