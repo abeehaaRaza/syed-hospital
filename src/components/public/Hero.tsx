@@ -16,9 +16,9 @@ export default function Hero() {
           </span>
 
           <h1 className="text-5xl lg:text-6xl font-extrabold font-heading text-[#0F2347] leading-[1.1] tracking-tight">
-            Your Health,
+            Compassionate care
             <br />
-            <span className="text-[#2E5FA3]">Our Priority</span>
+            <span className="text-[#2E5FA3]">exceptional results.</span>
           </h1>
 
           <p className="mt-6 text-lg text-slate-600 max-w-lg mx-auto lg:mx-0 leading-relaxed">

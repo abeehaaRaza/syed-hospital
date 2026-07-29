@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${poppins.variable} ${inter.variable} ${jost.variable}`}>
+    <html lang="en" className={`${poppins.variable} ${inter.variable} ${jost.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased">
         <Providers>{children}</Providers>
         <Toaster position="top-center" richColors />
