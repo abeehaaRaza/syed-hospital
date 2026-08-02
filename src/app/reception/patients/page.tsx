@@ -93,7 +93,7 @@ export default async function TodaysPatientsPage() {
                     <td className="px-6 py-4">
                       <span className="flex items-center gap-1.5 text-slate-600">
                         <Phone className="h-3.5 w-3.5 text-slate-400" />
-                        {p.mobile}
+                        {p.mobile || p.guardianMobile || '—'}
                       </span>
                     </td>
                     <td className="px-6 py-4">

@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   User, Phone, MapPin, CreditCard, Stethoscope,
-  FileText, Loader2, CheckCircle2, Copy, X, UserPlus,
+  FileText, Loader2, CheckCircle2, Copy, X, UserPlus, Users,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -18,10 +18,12 @@ import { Textarea } from '@/components/ui/textarea';
 const patientSchema = z.object({
   fullName: z.string().min(2, 'Name is required'),
   guardianName: z.string().optional(),
+  guardianCnic: z.string().optional(),
+  guardianMobile: z.string().optional(),
   age: z.coerce.number().min(0).max(120),
   gender: z.enum(['Male', 'Female', 'Other']),
   cnicNumber: z.string().optional(),
-  mobile: z.string().min(7, 'Valid mobile required'),
+  mobile: z.string().optional(),
   address: z.string().min(3, 'Address is required'),
   department: z.enum(['ER', 'OPD', 'IND']),
   serviceRequired: z.string().min(1, 'Select a service'),
@@ -42,6 +44,7 @@ type SuccessResult = {
   mrNumber: string;
   patientName: string;
   isFollowUp: boolean;
+  visitNumber: number;
 };
 
 export default function NewPatientPage() {
@@ -88,6 +91,7 @@ export default function NewPatientPage() {
         mrNumber: result.mrNumber,
         patientName: result.patientName,
         isFollowUp: result.isFollowUp,
+        visitNumber: result.visitNumber,
       });
     } catch {
       alert('Network error — could not save patient');
@@ -112,7 +116,6 @@ export default function NewPatientPage() {
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-extrabold font-heading text-[#0F2347]">
           Register New Patient
@@ -216,12 +219,11 @@ export default function NewPatientPage() {
               </div>
             </div>
             <div>
-              <Label htmlFor="mobile" className="text-slate-700 mb-2 block">Mobile *</Label>
+              <Label htmlFor="mobile" className="text-slate-700 mb-2 block">Mobile</Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input id="mobile" placeholder="03XX-XXXXXXX" className="h-11 pl-10" {...register('mobile')} />
               </div>
-              {errors.mobile && <p className="text-sm text-red-500 mt-1">{errors.mobile.message}</p>}
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="address" className="text-slate-700 mb-2 block">Address *</Label>
@@ -230,6 +232,33 @@ export default function NewPatientPage() {
                 <Textarea id="address" placeholder="Full address" className="pl-10 min-h-[80px]" {...register('address')} />
               </div>
               {errors.address && <p className="text-sm text-red-500 mt-1">{errors.address.message}</p>}
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 2.5 — Guardian contact (when patient has no CNIC/mobile) */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm ring-1 ring-slate-100">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-[#1E3A6E] mb-1">
+            <Users className="h-5 w-5 text-[#2E5FA3]" />
+            Guardian Contact
+          </h2>
+          <p className="text-xs text-slate-400 mb-5">
+            If the patient has no CNIC or mobile of their own (e.g. a child), record the guardian&apos;s here.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-5">
+            <div>
+              <Label htmlFor="guardianCnic" className="text-slate-700 mb-2 block">Guardian CNIC</Label>
+              <div className="relative">
+                <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input id="guardianCnic" placeholder="XXXXX-XXXXXXX-X" className="h-11 pl-10" {...register('guardianCnic')} />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="guardianMobile" className="text-slate-700 mb-2 block">Guardian Mobile</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input id="guardianMobile" placeholder="03XX-XXXXXXX" className="h-11 pl-10" {...register('guardianMobile')} />
+              </div>
             </div>
           </div>
         </div>
@@ -282,7 +311,6 @@ export default function NewPatientPage() {
           </label>
         </div>
 
-        {/* Submit */}
         <div className="flex justify-end gap-3">
           <Button
             type="submit"
@@ -302,11 +330,7 @@ export default function NewPatientPage() {
       {success && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative">
-            <button
-              onClick={registerAnother}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600"
-              aria-label="Close"
-            >
+            <button onClick={registerAnother} className="absolute top-5 right-5 text-slate-400 hover:text-slate-600" aria-label="Close">
               <X className="h-5 w-5" />
             </button>
 
@@ -319,7 +343,6 @@ export default function NewPatientPage() {
             </h2>
             <p className="text-slate-500 text-center mt-1">
               {success.patientName}
-              {success.isFollowUp && ' — existing patient'}
             </p>
 
             <div className="mt-6 bg-[#EFF6FF] rounded-2xl p-5 text-center ring-1 ring-[#2E5FA3]/10">
@@ -329,23 +352,24 @@ export default function NewPatientPage() {
               <p className="text-2xl font-mono font-bold text-[#1E3A6E] tracking-wide">
                 {success.mrNumber}
               </p>
-              <button
-                onClick={copyMR}
-                className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-[#2E5FA3] hover:text-[#264F87]"
-              >
-                <Copy className="h-4 w-4" />
-                {copied ? 'Copied!' : 'Copy number'}
-              </button>
+              <div className="mt-3 inline-flex items-center gap-2 bg-white rounded-full px-4 py-1.5 ring-1 ring-[#2E5FA3]/15">
+                <span className="text-sm font-semibold text-[#2E5FA3]">
+                  Visit #{success.visitNumber}
+                </span>
+              </div>
+              <div className="mt-3">
+                <button onClick={copyMR} className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2E5FA3] hover:text-[#264F87]">
+                  <Copy className="h-4 w-4" />
+                  {copied ? 'Copied!' : 'Copy number'}
+                </button>
+              </div>
             </div>
 
             <p className="text-xs text-slate-400 text-center mt-4">
-              Write this MR number on the patient&apos;s paper slip.
+              Write this MR number and visit number on the patient&apos;s paper slip.
             </p>
 
-            <Button
-              onClick={registerAnother}
-              className="w-full mt-6 h-12 bg-[#2E5FA3] hover:bg-[#264F87] text-white font-medium rounded-xl"
-            >
+            <Button onClick={registerAnother} className="w-full mt-6 h-12 bg-[#2E5FA3] hover:bg-[#264F87] text-white font-medium rounded-xl">
               <UserPlus className="mr-2 h-4 w-4" />
               Register Another Patient
             </Button>

@@ -154,3 +154,18 @@ export async function getReceptionStats() {
     return { today: 0, er: 0, opd: 0, ind: 0, recent: [] };
   }
 }
+export async function getPatientWithVisits(id: string) {
+  try {
+    const patient = await prisma.patient.findUnique({ where: { id } });
+    if (!patient) return null;
+
+    const visits = await prisma.visit.findMany({
+      where: { patientId: id },
+      orderBy: { visitNumber: 'desc' },
+    });
+
+    return { patient, visits };
+  } catch {
+    return null;
+  }
+}

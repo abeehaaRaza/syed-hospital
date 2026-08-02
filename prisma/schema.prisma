@@ -47,7 +47,9 @@ model Patient {
   id             String         @id @default(cuid())
   mrNumber       String         @unique
   fullName       String
-  guardianName   String?
+ guardianName   String?
+  guardianCnic   String?
+  guardianMobile String?
   age            Int
   gender         String
   dateOfBirth    DateTime?
@@ -88,13 +90,18 @@ model Visit {
   id           String    @id @default(cuid())
   patientId    String
   patient      Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  visitNumber  Int       @default(1)
   visitDate    DateTime  @default(now())
-  reason       String
+  department   DepartmentType
+  serviceRequired String?
+  reason       String?
   diagnosis    String?   @db.Text
   prescription String?   @db.Text
   doctorNotes  String?   @db.Text
   followUpDate DateTime?
   createdAt    DateTime  @default(now())
+
+  @@index([patientId, visitNumber])
 }
 
 model PatientDocument {

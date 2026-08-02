@@ -15,15 +15,33 @@ export async function PATCH(
     const { id } = await params;
     const data = await req.json();
 
+    // Receptionists can only edit patients registered TODAY
+    if (session.user.role !== 'ADMIN') {
+      const patient = await prisma.patient.findUnique({ where: { id } });
+      if (!patient) {
+        return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
+      }
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      if (new Date(patient.visitDate) < startOfDay) {
+        return NextResponse.json(
+          { error: 'Reception can only edit patients registered today. Ask an administrator for older records.' },
+          { status: 403 }
+        );
+      }
+    }
+
     const patient = await prisma.patient.update({
       where: { id },
       data: {
         fullName: data.fullName,
         guardianName: data.guardianName || null,
+        guardianCnic: data.guardianCnic || null,
+        guardianMobile: data.guardianMobile || null,
         age: Number(data.age),
         gender: data.gender,
         cnicNumber: data.cnicNumber || null,
-        mobile: data.mobile,
+        mobile: data.mobile || null,
         address: data.address,
         serviceRequired: data.serviceRequired || null,
         fee: data.fee ? Number(data.fee) : null,

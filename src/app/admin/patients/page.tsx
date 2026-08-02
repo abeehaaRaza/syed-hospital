@@ -97,7 +97,12 @@ export default async function AdminPatientsPage({
                         {p.department}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-600">{p.mobile}</td>
+                    <td className="px-6 py-4 text-slate-600">
+                      {p.mobile || p.guardianMobile || '—'}
+                      {!p.mobile && p.guardianMobile && (
+                        <span className="block text-xs text-slate-400">(guardian)</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-slate-500">
                       {new Date(p.visitDate).toLocaleDateString('en-GB')}
                     </td>
