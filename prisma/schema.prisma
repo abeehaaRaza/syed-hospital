@@ -65,6 +65,8 @@ model Patient {
   isVisible      Boolean        @default(true)
   visitDate      DateTime       @default(now())
   visitTime      String
+  tokenNumber    Int?
+  consentAt      DateTime?
   patientComment String?        @db.Text
   consentGiven   Boolean        @default(false)
   disposal       String?
@@ -172,4 +174,9 @@ model Department {
   iconName     String?
   displayOrder Int     @default(0)
   isActive     Boolean @default(true)
+}
+model TokenCounter {
+  id           String   @id @default(cuid())
+  date         String   @unique
+  currentCount Int      @default(0)
 }

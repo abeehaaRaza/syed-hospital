@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   User, Phone, MapPin, CreditCard, Stethoscope,
-  FileText, Loader2, CheckCircle2, Copy, X, UserPlus, Users,
+  FileText, Loader2, CheckCircle2, Copy, X, UserPlus, Users, Printer,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -45,6 +45,7 @@ type SuccessResult = {
   patientName: string;
   isFollowUp: boolean;
   visitNumber: number;
+  tokenNumber: number;
 };
 
 export default function NewPatientPage() {
@@ -92,6 +93,7 @@ export default function NewPatientPage() {
         patientName: result.patientName,
         isFollowUp: result.isFollowUp,
         visitNumber: result.visitNumber,
+        tokenNumber: result.tokenNumber,
       });
     } catch {
       alert('Network error — could not save patient');
@@ -107,6 +109,45 @@ export default function NewPatientPage() {
       setTimeout(() => setCopied(false), 2000);
     }
   }
+function printToken() {
+    if (!success) return;
+    const now = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Karachi' });
+    const win = window.open('', '', 'width=300,height=500');
+    if (!win) return;
+    win.document.write(`
+      <html><head><title>Token</title><style>
+        @page { size: 80mm auto; margin: 0; }
+        body { width: 72mm; margin: 0 auto; padding: 6mm 2mm; font-family: 'Courier New', monospace; text-align: center; color:#000; }
+        .brand { font-size: 15px; font-weight: bold; letter-spacing: 1px; }
+        .sub { font-size: 9px; letter-spacing: 3px; margin-bottom: 6px; }
+        .line { border-top: 1px dashed #000; margin: 8px 0; }
+        .token-label { font-size: 10px; margin-top: 6px; }
+        .token { font-size: 46px; font-weight: bold; line-height: 1; margin: 2px 0 8px; }
+        .row { font-size: 12px; margin: 3px 0; }
+        .mr { font-size: 14px; font-weight: bold; }
+        .foot { font-size: 9px; margin-top: 10px; }
+      </style></head><body>
+        <div class="brand">SYED HOSPITAL</div>
+        <div class="sub">PATIENT TOKEN</div>
+        <div class="line"></div>
+        <div class="token-label">TOKEN NUMBER</div>
+        <div class="token">${success.tokenNumber}</div>
+        <div class="line"></div>
+        <div class="row mr">MR: ${success.mrNumber}</div>
+        <div class="row">${success.patientName}</div>
+        <div class="row">Visit #${success.visitNumber}</div>
+        <div class="row">${now}</div>
+        <div class="line"></div>
+        <div class="foot">Please keep this token<br/>and wait for your turn</div>
+      </body></html>
+    `);
+    win.document.close();
+    win.focus();
+    win.print();
+    win.close();
+  }
+
+
 
   function registerAnother() {
     reset();
@@ -345,7 +386,18 @@ export default function NewPatientPage() {
               {success.patientName}
             </p>
 
-            <div className="mt-6 bg-[#EFF6FF] rounded-2xl p-5 text-center ring-1 ring-[#2E5FA3]/10">
+            {/* Queue Token — big and prominent */}
+            <div className="mt-6 bg-[#1E3A6E] rounded-2xl p-5 text-center text-white">
+              <p className="text-xs text-blue-200 uppercase tracking-wide mb-1">
+                Queue Token Number
+              </p>
+              <p className="text-5xl font-extrabold tracking-wide">
+                {success.tokenNumber}
+              </p>
+            </div>
+
+            {/* MR number box */}
+            <div className="mt-4 bg-[#EFF6FF] rounded-2xl p-5 text-center ring-1 ring-[#2E5FA3]/10">
               <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">
                 Medical Record Number
               </p>
@@ -365,8 +417,17 @@ export default function NewPatientPage() {
               </div>
             </div>
 
+            {/* Print token button */}
+            <button
+              onClick={printToken}
+              className="w-full mt-4 h-12 bg-white ring-1 ring-[#2E5FA3] text-[#2E5FA3] hover:bg-[#EFF6FF] font-medium rounded-xl inline-flex items-center justify-center gap-2"
+            >
+              <Printer className="h-4 w-4" />
+              Print Token
+            </button>
+
             <p className="text-xs text-slate-400 text-center mt-4">
-              Write this MR number and visit number on the patient&apos;s paper slip.
+              Print the token slip and staple it to the patient&apos;s prescription.
             </p>
 
             <Button onClick={registerAnother} className="w-full mt-6 h-12 bg-[#2E5FA3] hover:bg-[#264F87] text-white font-medium rounded-xl">

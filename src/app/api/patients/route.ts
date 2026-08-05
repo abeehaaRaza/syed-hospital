@@ -1,3 +1,4 @@
+import { generateTokenNumber } from '@/lib/token-generator';
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -15,8 +16,10 @@ export async function POST(req: Request) {
 
     const now = new Date();
     const visitTime = now.toLocaleTimeString('en-US', {
+      timeZone: 'Asia/Karachi',
       hour: '2-digit',
       minute: '2-digit',
+      hour12: true,
     });
 
     // Build a list of identifiers to match a returning patient by:
@@ -120,6 +123,13 @@ export async function POST(req: Request) {
       },
     });
 
+    // Generate a daily queue token and save it to the patient
+    const tokenNumber = await generateTokenNumber();
+    await prisma.patient.update({
+      where: { id: patientId },
+      data: { tokenNumber },
+    });
+
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
@@ -135,6 +145,7 @@ export async function POST(req: Request) {
       patientName: data.fullName,
       isFollowUp,
       visitNumber,
+      tokenNumber,
     });
   } catch (error) {
     console.error('Save patient error:', error);

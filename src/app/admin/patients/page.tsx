@@ -1,3 +1,4 @@
+import { formatPakistanDate } from '@/lib/time';
 import Link from 'next/link';
 import { getAllPatients } from '@/lib/data';
 import PatientRowActions from '@/components/admin/PatientRowActions';
@@ -104,7 +105,7 @@ export default async function AdminPatientsPage({
                       )}
                     </td>
                     <td className="px-6 py-4 text-slate-500">
-                      {new Date(p.visitDate).toLocaleDateString('en-GB')}
+                     {formatPakistanDate(p.visitDate)}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${

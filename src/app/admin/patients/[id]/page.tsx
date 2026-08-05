@@ -41,7 +41,14 @@ export default async function PatientDetailPage({
           <h1 className="text-3xl font-extrabold font-heading text-[#0F2347]">
             {patient.fullName}
           </h1>
-          <p className="font-mono font-semibold text-[#2E5FA3] mt-1">{patient.mrNumber}</p>
+          <p className="font-mono font-semibold text-[#2E5FA3] mt-1">
+            {patient.mrNumber}
+            {patient.tokenNumber != null && (
+              <span className="ml-3 inline-block bg-[#1E3A6E] text-white text-xs font-bold px-2.5 py-1 rounded-full align-middle">
+                Token #{patient.tokenNumber}
+              </span>
+            )}
+          </p>
           <p className="text-sm text-slate-500 mt-1">
             {patient.department}
             {patient.serviceRequired ? ` · ${patient.serviceRequired}` : ''} ·{' '}
