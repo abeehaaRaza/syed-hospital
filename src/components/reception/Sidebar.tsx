@@ -3,13 +3,15 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, UserPlus, Users, Settings, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, UserPlus, Users, Settings, ArrowLeft, Search, CalendarClock } from 'lucide-react';
 import LogoutButton from '@/components/shared/LogoutButton';
 
 const navItems = [
   { label: 'Dashboard', href: '/reception/dashboard', icon: LayoutDashboard },
   { label: 'New Patient', href: '/reception/new-patient', icon: UserPlus },
   { label: "Today's Patients", href: '/reception/patients', icon: Users },
+  { label: 'Find Patient', href: '/reception/search', icon: Search },
+  { label: 'Follow-ups', href: '/reception/follow-ups', icon: CalendarClock },
   { label: 'Settings', href: '/reception/settings', icon: Settings },
 ];
 

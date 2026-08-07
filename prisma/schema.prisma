@@ -67,6 +67,9 @@ model Patient {
   visitTime      String
   tokenNumber    Int?
   consentAt      DateTime?
+  followUpDate   DateTime?
+  followUpReason String?
+  followUpDone   Boolean   @default(false)
   patientComment String?        @db.Text
   consentGiven   Boolean        @default(false)
   disposal       String?

@@ -169,3 +169,83 @@ export async function getPatientWithVisits(id: string) {
     return null;
   }
 }
+// Reception search — returns only basic identifying info, no medical history
+export async function searchPatientsForReception(search: string) {
+  if (!search || search.trim().length < 2) return [];
+  try {
+    return await prisma.patient.findMany({
+      where: {
+        isVisible: true,
+        OR: [
+          { fullName: { contains: search, mode: 'insensitive' as const } },
+          { mrNumber: { contains: search, mode: 'insensitive' as const } },
+          { mobile: { contains: search } },
+          { cnicNumber: { contains: search } },
+          { guardianMobile: { contains: search } },
+          { guardianCnic: { contains: search } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+      // Select ONLY basic fields — no diagnoses, notes, fees, or visit history
+      select: {
+        id: true,
+        mrNumber: true,
+        fullName: true,
+        guardianName: true,
+        age: true,
+        gender: true,
+        mobile: true,
+        guardianMobile: true,
+        department: true,
+        visitDate: true,
+      },
+    });
+  } catch {
+    return [];
+  }
+}
+// Patients with a pending (not-done) follow-up, soonest first
+export async function getUpcomingFollowUps() {
+  try {
+    return await prisma.patient.findMany({
+      where: {
+        followUpDate: { not: null },
+        followUpDone: false,
+        isVisible: true,
+      },
+      orderBy: { followUpDate: 'asc' },
+      select: {
+        id: true,
+        mrNumber: true,
+        fullName: true,
+        guardianName: true,
+        mobile: true,
+        guardianMobile: true,
+        department: true,
+        followUpDate: true,
+        followUpReason: true,
+      },
+    });
+  } catch {
+    return [];
+  }
+}
+export async function getTodayFollowUpCount() {
+  try {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+
+    return await prisma.patient.count({
+      where: {
+        followUpDone: false,
+        isVisible: true,
+        followUpDate: { gte: start, lte: end },
+      },
+    });
+  } catch {
+    return 0;
+  }
+}

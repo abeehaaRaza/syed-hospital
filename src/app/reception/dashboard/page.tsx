@@ -1,16 +1,18 @@
 import Link from 'next/link';
 import { auth } from '@/lib/auth';
-import { getReceptionStats } from '@/lib/data';
-import { UserPlus, Users, Ambulance, Stethoscope, BedDouble, ArrowRight } from 'lucide-react';
+import { getReceptionStats, getTodayFollowUpCount } from '@/lib/data';
+import { UserPlus, Users, Ambulance, Stethoscope, BedDouble, ArrowRight, CalendarClock } from 'lucide-react';
 
 export const metadata = { title: 'Reception Dashboard · Syed Hospital' };
 
 export default async function ReceptionDashboard() {
   const session = await auth();
   const stats = await getReceptionStats();
+  const followUpCount = await getTodayFollowUpCount();
 
   const today = new Date().toLocaleDateString('en-GB', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    timeZone: 'Asia/Karachi',
   });
 
   const cards = [
@@ -28,6 +30,23 @@ export default async function ReceptionDashboard() {
         </h1>
         <p className="text-slate-500 mt-1">{today}</p>
       </div>
+
+      {/* Follow-up reminder banner */}
+      {followUpCount > 0 && (
+        <Link href="/reception/follow-ups" className="block bg-amber-50 ring-1 ring-amber-200 rounded-2xl p-4 mb-6 hover:bg-amber-100 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center">
+              <CalendarClock className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="font-bold text-amber-800">
+                {followUpCount} follow-up{followUpCount !== 1 ? 's' : ''} due today
+              </p>
+              <p className="text-sm text-amber-700">Tap to see who to call and remind.</p>
+            </div>
+          </div>
+        </Link>
+      )}
 
       {/* Primary action */}
       <Link href="/reception/new-patient" className="block bg-gradient-to-br from-[#2E5FA3] to-[#1E3A6E] rounded-2xl p-6 mb-8 text-white hover:shadow-lg transition-shadow">
@@ -81,7 +100,7 @@ export default async function ReceptionDashboard() {
                   <td className="px-6 py-4 font-medium text-slate-800">{p.fullName}</td>
                   <td className="px-6 py-4 text-slate-500">{p.department}</td>
                   <td className="px-6 py-4 text-slate-500">
-                    {new Date(p.visitDate).toLocaleDateString('en-GB')} · {p.visitTime}
+                    {new Date(p.visitDate).toLocaleDateString('en-GB', { timeZone: 'Asia/Karachi' })} · {p.visitTime}
                   </td>
                 </tr>
               ))}

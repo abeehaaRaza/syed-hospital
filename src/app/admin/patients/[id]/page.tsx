@@ -95,6 +95,24 @@ export default async function PatientDetailPage({
           </div>
         </div>
       </div>
+      {/* Follow-up status */}
+      {patient.followUpDate && (
+        <div className={`rounded-2xl p-5 ring-1 shadow-sm mb-6 ${patient.followUpDone ? 'bg-slate-50 ring-slate-100' : 'bg-[#EFF6FF] ring-[#2E5FA3]/15'}`}>
+          <div className="flex items-center gap-2 mb-1">
+            <CalendarClock className="h-5 w-5 text-[#2E5FA3]" />
+            <h2 className="text-lg font-bold text-[#1E3A6E]">Follow-up</h2>
+            {patient.followUpDone ? (
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-600">Completed</span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-600">Pending</span>
+            )}
+          </div>
+          <p className="text-sm text-slate-600">
+            Scheduled for {new Date(patient.followUpDate).toLocaleDateString('en-GB', { timeZone: 'Asia/Karachi' })}
+            {patient.followUpReason ? ` · ${patient.followUpReason}` : ''}
+          </p>
+        </div>
+      )}
 
       {/* Visit history */}
       <div className="bg-white rounded-2xl ring-1 ring-slate-100 shadow-sm mb-6 overflow-hidden">
