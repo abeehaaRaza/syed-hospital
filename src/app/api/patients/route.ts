@@ -21,6 +21,15 @@ export async function POST(req: Request) {
       minute: '2-digit',
       hour12: true,
     });
+    const visitDateTime = now.toLocaleString('en-GB', {
+      timeZone: 'Asia/Karachi',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
 
     // Build a list of identifiers to match a returning patient by:
     // patient CNIC, patient mobile, guardian CNIC, guardian mobile
@@ -139,13 +148,14 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({
+   return NextResponse.json({
       success: true,
       mrNumber,
       patientName: data.fullName,
       isFollowUp,
       visitNumber,
       tokenNumber,
+      visitDateTime,
     });
   } catch (error) {
     console.error('Save patient error:', error);

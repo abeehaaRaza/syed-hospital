@@ -53,7 +53,7 @@ export default async function StaffPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-slate-500">
-                    {u.lastLogin ? new Date(u.lastLogin).toLocaleString('en-GB') : 'Never'}
+                    {u.lastLogin ? new Date(u.lastLogin).toLocaleString('en-GB', { timeZone: 'Asia/Karachi' }) : 'Never'}
                   </td>
                   <td className="px-6 py-4">
                     <StaffRowActions

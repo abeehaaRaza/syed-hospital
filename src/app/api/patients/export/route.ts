@@ -28,8 +28,8 @@ export async function GET() {
     [
       p.mrNumber, p.fullName, p.guardianName, p.age, p.gender, p.cnicNumber,
       p.mobile, p.address, p.department, p.serviceRequired, p.fee, p.disposal,
-      p.details, new Date(p.visitDate).toLocaleDateString('en-GB'), p.visitTime,
-      p.status, new Date(p.createdAt).toLocaleString('en-GB'),
+      p.details, new Date(p.visitDate).toLocaleDateString('en-GB', { timeZone: 'Asia/Karachi' }), p.visitTime,
+      p.status, new Date(p.createdAt).toLocaleString('en-GB', { timeZone: 'Asia/Karachi' }),
     ].map(esc).join(',')
   );
 

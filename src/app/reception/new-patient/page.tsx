@@ -46,6 +46,7 @@ type SuccessResult = {
   isFollowUp: boolean;
   visitNumber: number;
   tokenNumber: number;
+  visitDateTime: string;
 };
 
 export default function NewPatientPage() {
@@ -94,6 +95,7 @@ export default function NewPatientPage() {
         isFollowUp: result.isFollowUp,
         visitNumber: result.visitNumber,
         tokenNumber: result.tokenNumber,
+        visitDateTime: result.visitDateTime,
       });
     } catch {
       alert('Network error — could not save patient');
@@ -111,7 +113,7 @@ export default function NewPatientPage() {
   }
 function printToken() {
     if (!success) return;
-    const now = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Karachi' });
+    const now = success.visitDateTime;
     const win = window.open('', '', 'width=300,height=500');
     if (!win) return;
     win.document.write(`

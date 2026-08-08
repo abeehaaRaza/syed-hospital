@@ -141,7 +141,7 @@ export default async function PatientDetailPage({
                     </span>
                   </td>
                   <td className="px-6 py-3 text-slate-600">
-                    {new Date(v.visitDate).toLocaleString('en-GB')}
+                    {new Date(v.visitDate).toLocaleString('en-GB', { timeZone: 'Asia/Karachi' })}
                   </td>
                   <td className="px-6 py-3 text-slate-600">{v.department}</td>
                   <td className="px-6 py-3 text-slate-600">{v.serviceRequired || '—'}</td>
