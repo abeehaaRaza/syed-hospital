@@ -92,7 +92,7 @@ export default async function AdminPatientsPage({
                       </Link>
                       {p.guardianName && <p className="text-xs text-slate-400">{p.guardianName}</p>}
                     </td>
-                    <td className="px-6 py-4 text-slate-600">{p.age} / {p.gender}</td>
+                    <td className="px-6 py-4 text-slate-600">{p.age} {p.ageUnit} / {p.gender}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${deptColors[p.department] ?? 'bg-slate-100 text-slate-600'}`}>
                         {p.department}

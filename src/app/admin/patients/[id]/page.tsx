@@ -158,7 +158,7 @@ export default async function PatientDetailPage({
           id: patient.id,
           fullName: patient.fullName,
           guardianName: patient.guardianName ?? '',
-          age: patient.age,
+          age: patient.ageUnit,
           gender: patient.gender,
           cnicNumber: patient.cnicNumber ?? '',
           mobile: patient.mobile ?? '',

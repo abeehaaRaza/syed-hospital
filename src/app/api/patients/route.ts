@@ -98,6 +98,7 @@ export async function POST(req: Request) {
           guardianCnic: gCnic,
           guardianMobile: gMobile,
           age: Number(data.age),
+          ageUnit: data.ageUnit || 'Years',
           gender: data.gender,
           cnicNumber: cnic,
           mobile: data.mobile,

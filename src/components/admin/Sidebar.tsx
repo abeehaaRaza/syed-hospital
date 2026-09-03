@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, UserCog,
-  ScrollText, HardDrive, Settings,
+  ScrollText, HardDrive, Settings, Shield, Briefcase,
 } from 'lucide-react';
 import LogoutButton from '@/components/shared/LogoutButton';
 
@@ -13,6 +13,8 @@ const navItems = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'All Patients', href: '/admin/patients', icon: Users },
   { label: 'Staff Accounts', href: '/admin/staff', icon: UserCog },
+  { label: 'Hospital Staff', href: '/admin/staff/hire', icon: Briefcase },
+  { label: 'HR Portal', href: '/hr/dashboard', icon: Shield },
   { label: 'Audit Log', href: '/admin/audit-log', icon: ScrollText },
   { label: 'Backups', href: '/admin/backups', icon: HardDrive },
   { label: 'Settings', href: '/admin/settings', icon: Settings },

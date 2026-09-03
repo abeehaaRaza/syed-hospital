@@ -77,7 +77,7 @@ export default function EditPatientForm({ patient }: { patient: PatientData }) {
         </div>
         <div>
           <Label className="text-slate-700 mb-2 block">Age</Label>
-          <Input type="number" value={form.age} onChange={(e) => set('age', Number(e.target.value))} className="h-11" required />
+          <Input type="number" value={form.ageUnit} onChange={(e) => set('ageUnit', Number(e.target.value))} className="h-11" required />
         </div>
         <div>
           <Label className="text-slate-700 mb-2 block">Gender</Label>

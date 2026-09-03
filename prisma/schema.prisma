@@ -10,6 +10,7 @@ datasource db {
 enum Role {
   ADMIN
   RECEPTIONIST
+  HR
 }
 
 model User {
@@ -50,7 +51,8 @@ model Patient {
  guardianName   String?
   guardianCnic   String?
   guardianMobile String?
-  age            Int
+    age            Int
+  ageUnit        String    @default("Years")
   gender         String
   dateOfBirth    DateTime?
   cnicNumber     String?
@@ -182,4 +184,72 @@ model TokenCounter {
   id           String   @id @default(cuid())
   date         String   @unique
   currentCount Int      @default(0)
+}
+
+model HospitalLicense {
+  id             String    @id @default(cuid())
+  name           String    @unique
+  issuanceDate   DateTime?
+  expiryDate     DateTime?
+  rackLocation   String?
+  documentUrl    String?
+  notes          String?   @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  history        LicenseHistory[]
+  notifications  LicenseNotification[]
+}
+
+model LicenseHistory {
+  id          String          @id @default(cuid())
+  licenseId   String
+  license     HospitalLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  issuanceDate DateTime
+  expiryDate  DateTime
+  documentUrl String?
+  notes       String?         @db.Text
+  recordedAt  DateTime        @default(now())
+}
+
+model LicenseNotification {
+  id          String          @id @default(cuid())
+  licenseId   String
+  license     HospitalLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  message     String          @db.Text
+  isRead      Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+}
+
+model Employee {
+  id           String       @id @default(cuid())
+  fullName     String
+  age          Int
+  designation  String
+  department   String?
+  shift        String
+  joiningDate  DateTime
+  photoUrl     String?
+  phone        String?
+  cnic         String?
+  address      String?      @db.Text
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  attendance   Attendance[]
+}
+
+model Attendance {
+  id          String    @id @default(cuid())
+  employeeId  String
+  employee    Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date        String
+  status      String
+  checkIn     String?
+  checkOut    String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+
+  @@unique([employeeId, date])
 }

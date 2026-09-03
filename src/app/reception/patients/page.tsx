@@ -6,7 +6,6 @@ export const metadata = {
   title: "Today's Patients · Syed Hospital",
 };
 
-// Department badge colors
 const deptColors: Record<string, string> = {
   ER: 'bg-red-50 text-red-600',
   OPD: 'bg-blue-50 text-[#2E5FA3]',
@@ -18,7 +17,6 @@ export default async function TodaysPatientsPage() {
 
   return (
     <div className="p-8">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-extrabold font-heading text-[#0F2347]">
@@ -37,19 +35,15 @@ export default async function TodaysPatientsPage() {
         </Link>
       </div>
 
-      {/* Empty state */}
       {patients.length === 0 ? (
         <div className="bg-white rounded-2xl p-16 text-center ring-1 ring-slate-100">
           <div className="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4">
             <Users className="h-8 w-8 text-slate-300" />
           </div>
           <h3 className="text-lg font-semibold text-slate-700">No patients yet today</h3>
-          <p className="text-slate-400 mt-1">
-            Registered patients will appear here.
-          </p>
+          <p className="text-slate-400 mt-1">Registered patients will appear here.</p>
         </div>
       ) : (
-        /* Patient table */
         <div className="bg-white rounded-2xl ring-1 ring-slate-100 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -71,9 +65,7 @@ export default async function TodaysPatientsPage() {
                     className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors"
                   >
                     <td className="px-6 py-4">
-                      <span className="font-mono font-semibold text-[#1E3A6E]">
-                        {p.mrNumber}
-                      </span>
+                      <span className="font-mono font-semibold text-[#1E3A6E]">{p.mrNumber}</span>
                     </td>
                     <td className="px-6 py-4">
                       <p className="font-medium text-slate-800">{p.fullName}</p>
@@ -82,7 +74,7 @@ export default async function TodaysPatientsPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-slate-600">
-                      {p.age} / {p.gender}
+                      {p.age} {(p as any).ageUnit ?? 'Years'} / {p.gender}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${deptColors[p.department] ?? 'bg-slate-100 text-slate-600'}`}>

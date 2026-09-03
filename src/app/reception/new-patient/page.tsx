@@ -20,7 +20,8 @@ const patientSchema = z.object({
   guardianName: z.string().optional(),
   guardianCnic: z.string().optional(),
   guardianMobile: z.string().optional(),
-  age: z.coerce.number().min(0).max(120),
+  age: z.coerce.number().min(0).max(999),
+  ageUnit: z.enum(['Days', 'Months', 'Years']).default('Years'),
   gender: z.enum(['Male', 'Female', 'Other']),
   cnicNumber: z.string().optional(),
   mobile: z.string().optional(),
@@ -65,6 +66,7 @@ export default function NewPatientPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(patientSchema) as any,
     defaultValues: {
+      ageUnit: 'Years',
       gender: 'Male',
       department: 'OPD',
       consentGiven: false,
@@ -111,7 +113,8 @@ export default function NewPatientPage() {
       setTimeout(() => setCopied(false), 2000);
     }
   }
-function printToken() {
+
+  function printToken() {
     if (!success) return;
     const now = success.visitDateTime;
     const win = window.open('', '', 'width=300,height=500');
@@ -148,8 +151,6 @@ function printToken() {
     win.print();
     win.close();
   }
-
-
 
   function registerAnother() {
     reset();
@@ -236,11 +237,30 @@ function printToken() {
               <Label htmlFor="guardianName" className="text-slate-700 mb-2 block">S/O · D/O · W/O</Label>
               <Input id="guardianName" placeholder="Father/Husband name" className="h-11" {...register('guardianName')} />
             </div>
+
+            {/* AGE WITH UNIT */}
             <div>
               <Label htmlFor="age" className="text-slate-700 mb-2 block">Age *</Label>
-              <Input id="age" type="number" placeholder="Age" className="h-11" {...register('age')} />
+              <div className="flex gap-2">
+                <Input
+                  id="age"
+                  type="number"
+                  placeholder="e.g. 3"
+                  className="h-11 flex-1"
+                  {...register('age')}
+                />
+                <select
+                  {...register('ageUnit')}
+                  className="h-11 rounded-xl border border-slate-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E5FA3]"
+                >
+                  <option value="Days">Days</option>
+                  <option value="Months">Months</option>
+                  <option value="Years">Years</option>
+                </select>
+              </div>
               {errors.age && <p className="text-sm text-red-500 mt-1">{errors.age.message}</p>}
             </div>
+
             <div>
               <Label className="text-slate-700 mb-2 block">Gender *</Label>
               <div className="flex gap-3">
@@ -279,7 +299,7 @@ function printToken() {
           </div>
         </div>
 
-        {/* SECTION 2.5 — Guardian contact (when patient has no CNIC/mobile) */}
+        {/* SECTION 2.5 — Guardian Contact */}
         <div className="bg-white rounded-2xl p-6 shadow-sm ring-1 ring-slate-100">
           <h2 className="flex items-center gap-2 text-lg font-bold text-[#1E3A6E] mb-1">
             <Users className="h-5 w-5 text-[#2E5FA3]" />
@@ -384,32 +404,20 @@ function printToken() {
             <h2 className="text-2xl font-extrabold font-heading text-[#0F2347] text-center">
               {success.isFollowUp ? 'Follow-up Recorded' : 'Patient Registered'}
             </h2>
-            <p className="text-slate-500 text-center mt-1">
-              {success.patientName}
-            </p>
+            <p className="text-slate-500 text-center mt-1">{success.patientName}</p>
 
-            {/* Queue Token — big and prominent */}
+            {/* Queue Token */}
             <div className="mt-6 bg-[#1E3A6E] rounded-2xl p-5 text-center text-white">
-              <p className="text-xs text-blue-200 uppercase tracking-wide mb-1">
-                Queue Token Number
-              </p>
-              <p className="text-5xl font-extrabold tracking-wide">
-                {success.tokenNumber}
-              </p>
+              <p className="text-xs text-blue-200 uppercase tracking-wide mb-1">Queue Token Number</p>
+              <p className="text-5xl font-extrabold tracking-wide">{success.tokenNumber}</p>
             </div>
 
-            {/* MR number box */}
+            {/* MR number */}
             <div className="mt-4 bg-[#EFF6FF] rounded-2xl p-5 text-center ring-1 ring-[#2E5FA3]/10">
-              <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">
-                Medical Record Number
-              </p>
-              <p className="text-2xl font-mono font-bold text-[#1E3A6E] tracking-wide">
-                {success.mrNumber}
-              </p>
+              <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Medical Record Number</p>
+              <p className="text-2xl font-mono font-bold text-[#1E3A6E] tracking-wide">{success.mrNumber}</p>
               <div className="mt-3 inline-flex items-center gap-2 bg-white rounded-full px-4 py-1.5 ring-1 ring-[#2E5FA3]/15">
-                <span className="text-sm font-semibold text-[#2E5FA3]">
-                  Visit #{success.visitNumber}
-                </span>
+                <span className="text-sm font-semibold text-[#2E5FA3]">Visit #{success.visitNumber}</span>
               </div>
               <div className="mt-3">
                 <button onClick={copyMR} className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2E5FA3] hover:text-[#264F87]">
@@ -419,7 +427,6 @@ function printToken() {
               </div>
             </div>
 
-            {/* Print token button */}
             <button
               onClick={printToken}
               className="w-full mt-4 h-12 bg-white ring-1 ring-[#2E5FA3] text-[#2E5FA3] hover:bg-[#EFF6FF] font-medium rounded-xl inline-flex items-center justify-center gap-2"

@@ -33,7 +33,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${poppins.variable} ${inter.variable} ${jost.variable}`} suppressHydrationWarning>
-      <body className="font-sans antialiased">
+        <body className="font-sans antialiased" suppressHydrationWarning>
         <Providers>{children}</Providers>
         <Toaster position="top-center" richColors />
       </body>
