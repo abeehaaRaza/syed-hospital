@@ -153,12 +153,13 @@ export default async function PatientDetailPage({
       </div>
 
       {/* Edit form */}
-      <EditPatientForm
+            <EditPatientForm
         patient={{
           id: patient.id,
           fullName: patient.fullName,
           guardianName: patient.guardianName ?? '',
-          age: patient.ageUnit,
+          age: patient.age,
+          ageUnit: patient.ageUnit ?? 'Years',
           gender: patient.gender,
           cnicNumber: patient.cnicNumber ?? '',
           mobile: patient.mobile ?? '',

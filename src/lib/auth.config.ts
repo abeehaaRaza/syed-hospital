@@ -17,5 +17,11 @@ export const authConfig = {
       session.user.id = token.id as string;
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // After sign in, redirect based on role stored in the URL or default
+      if (url.startsWith(baseUrl)) return url;
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      return baseUrl;
+    },
   },
 } satisfies NextAuthConfig;

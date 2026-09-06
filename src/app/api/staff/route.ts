@@ -11,7 +11,8 @@ export async function POST(req: Request) {
   }
   if (session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Only an administrator can create accounts' }, { status: 403 });
-  }
+  } 
+  
 
   try {
     const { fullName, username, email, password, role } = await req.json();
@@ -30,13 +31,19 @@ export async function POST(req: Request) {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
+    // Correctly map all three roles
+    let assignedRole: Role = Role.RECEPTIONIST;
+    if (role === 'ADMIN') assignedRole = Role.ADMIN;
+    else if (role === 'HR') assignedRole = Role.HR;
+    else assignedRole = Role.RECEPTIONIST;
+
     const user = await prisma.user.create({
       data: {
         fullName,
         username,
         email,
         passwordHash,
-        role: role === 'ADMIN' ? Role.ADMIN : Role.RECEPTIONIST,
+        role: assignedRole,
       },
     });
 

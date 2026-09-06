@@ -10,7 +10,11 @@ import { Label } from '@/components/ui/label';
 export default function CreateStaffForm() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [created, setCreated] = useState<{ username: string; password: string; role: string } | null>(null);
+  const [created, setCreated] = useState<{
+    username: string;
+    password: string;
+    role: string;
+  } | null>(null);
   const [form, setForm] = useState({
     fullName: '',
     username: '',
@@ -36,8 +40,18 @@ export default function CreateStaffForm() {
       if (!res.ok) {
         alert(data.error || 'Could not create account');
       } else {
-        setCreated({ username: form.username, password: form.password, role: form.role });
-        setForm({ fullName: '', username: '', email: '', password: '', role: 'RECEPTIONIST' });
+        setCreated({
+          username: form.username,
+          password: form.password,
+          role: form.role,
+        });
+        setForm({
+          fullName: '',
+          username: '',
+          email: '',
+          password: '',
+          role: 'RECEPTIONIST',
+        });
         router.refresh();
       }
     } catch {
@@ -60,16 +74,24 @@ export default function CreateStaffForm() {
         <div className="bg-[#EFF6FF] rounded-xl p-5 ring-1 ring-[#2E5FA3]/10 space-y-2">
           <p className="text-sm">
             <span className="text-slate-500">Username:</span>{' '}
-            <span className="font-mono font-semibold text-[#1E3A6E]">{created.username}</span>
+            <span className="font-mono font-semibold text-[#1E3A6E]">
+              {created.username}
+            </span>
           </p>
           <p className="text-sm">
             <span className="text-slate-500">Password:</span>{' '}
-            <span className="font-mono font-semibold text-[#1E3A6E]">{created.password}</span>
+            <span className="font-mono font-semibold text-[#1E3A6E]">
+              {created.password}
+            </span>
           </p>
           <p className="text-sm">
             <span className="text-slate-500">Role:</span>{' '}
             <span className="font-semibold text-[#1E3A6E]">
-              {created.role === 'ADMIN' ? 'Administrator' : 'Receptionist'}
+              {created.role === 'ADMIN'
+                ? 'Administrator'
+                : created.role === 'HR'
+                ? 'HR Officer'
+                : 'Receptionist'}
             </span>
           </p>
           <button
@@ -95,7 +117,10 @@ export default function CreateStaffForm() {
   }
 
   return (
-    <form onSubmit={submit} className="bg-white rounded-2xl p-6 ring-1 ring-slate-100 shadow-sm">
+    <form
+      onSubmit={submit}
+      className="bg-white rounded-2xl p-6 ring-1 ring-slate-100 shadow-sm"
+    >
       <h2 className="flex items-center gap-2 text-lg font-bold text-[#1E3A6E] mb-5">
         <UserPlus className="h-5 w-5 text-[#2E5FA3]" />
         Create Staff Account
@@ -103,19 +128,48 @@ export default function CreateStaffForm() {
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
           <Label className="text-slate-700 mb-2 block">Full Name *</Label>
-          <Input value={form.fullName} onChange={(e) => set('fullName', e.target.value)} placeholder="Staff member's name" className="h-11" required />
+          <Input
+            value={form.fullName}
+            onChange={(e) => set('fullName', e.target.value)}
+            placeholder="Staff member's name"
+            className="h-11"
+            required
+          />
         </div>
         <div>
           <Label className="text-slate-700 mb-2 block">Username *</Label>
-          <Input value={form.username} onChange={(e) => set('username', e.target.value)} placeholder="e.g. reception1" className="h-11" required minLength={3} />
+          <Input
+            value={form.username}
+            onChange={(e) => set('username', e.target.value)}
+            placeholder="e.g. hr1 or reception1"
+            className="h-11"
+            required
+            minLength={3}
+          />
         </div>
         <div>
           <Label className="text-slate-700 mb-2 block">Email *</Label>
-          <Input type="email" value={form.email} onChange={(e) => set('email', e.target.value)} placeholder="staff@syedhospital.com" className="h-11" required />
+          <Input
+            type="email"
+            value={form.email}
+            onChange={(e) => set('email', e.target.value)}
+            placeholder="staff@syedhospital.com"
+            className="h-11"
+            required
+          />
         </div>
         <div>
-          <Label className="text-slate-700 mb-2 block">Temporary Password *</Label>
-          <Input value={form.password} onChange={(e) => set('password', e.target.value)} placeholder="At least 8 characters" className="h-11" required minLength={8} />
+          <Label className="text-slate-700 mb-2 block">
+            Temporary Password *
+          </Label>
+          <Input
+            value={form.password}
+            onChange={(e) => set('password', e.target.value)}
+            placeholder="At least 8 characters"
+            className="h-11"
+            required
+            minLength={8}
+          />
         </div>
         <div>
           <Label className="text-slate-700 mb-2 block">Role *</Label>
@@ -125,16 +179,28 @@ export default function CreateStaffForm() {
             className="w-full h-11 rounded-xl border border-slate-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E5FA3]"
           >
             <option value="RECEPTIONIST">Receptionist</option>
+            <option value="HR">HR Officer</option>
             <option value="ADMIN">Administrator</option>
           </select>
           <p className="text-xs text-slate-400 mt-1">
-            Create a second Administrator as a password-recovery backup.
+            HR Officers manage licenses and staff attendance. Administrators
+            have full access.
           </p>
         </div>
       </div>
       <div className="flex justify-end mt-6">
-        <Button type="submit" disabled={busy} className="h-11 px-6 bg-[#2E5FA3] hover:bg-[#264F87] text-white rounded-xl">
-          {busy ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...</> : 'Create Account'}
+        <Button
+          type="submit"
+          disabled={busy}
+          className="h-11 px-6 bg-[#2E5FA3] hover:bg-[#264F87] text-white rounded-xl"
+        >
+          {busy ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...
+            </>
+          ) : (
+            'Create Account'
+          )}
         </Button>
       </div>
     </form>

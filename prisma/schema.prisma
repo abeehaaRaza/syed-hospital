@@ -222,24 +222,25 @@ model LicenseNotification {
 }
 
 model Employee {
-  id           String       @id @default(cuid())
-  fullName     String
-  age          Int
-  designation  String
-  department   String?
-  shift        String
-  joiningDate  DateTime
-  photoUrl     String?
-  phone        String?
-  cnic         String?
-  address      String?      @db.Text
-  isActive     Boolean      @default(true)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id               String       @id @default(cuid())
+  fullName         String
+  age              Int
+  designation      String
+  department       String?
+  shift            String
+  joiningDate      DateTime
+  photoUrl         String?
+  phone            String?
+  cnic             String?
+  address          String?      @db.Text
+  isActive         Boolean      @default(true)
+  employmentStatus String       @default("Active")
+  leftDate         DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
   attendance   Attendance[]
 }
-
 model Attendance {
   id          String    @id @default(cuid())
   employeeId  String

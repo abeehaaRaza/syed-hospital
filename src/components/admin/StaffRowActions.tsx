@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { KeyRound, UserX, UserCheck, Loader2 } from 'lucide-react';
+import { KeyRound, UserX, UserCheck, Loader2, Trash2 } from 'lucide-react';
 
 export default function StaffRowActions({
   id,
@@ -43,7 +43,14 @@ export default function StaffRowActions({
       return;
     }
     call({ action: 'resetPassword', newPassword: pw });
-    alert(`Password set. Give this to the staff member:\n\n${pw}`);
+    alert(`Password updated. Give this to the staff member:\n\n${pw}`);
+  }
+
+    function deleteAccount() {
+    call(
+      { action: 'delete' },
+      'Delete this staff account? If it has activity history, it will be deactivated and archived instead of fully removed, to preserve records.'
+    );
   }
 
   if (busy) {
@@ -61,21 +68,37 @@ export default function StaffRowActions({
       </button>
 
       {!isSelf && (
-        <button
-          onClick={() =>
-            call(
-              { action: 'toggleActive' },
-              isActive ? 'Deactivate this account? They will not be able to log in.' : 'Reactivate this account?'
-            )
-          }
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${
-            isActive
-              ? 'bg-red-50 text-red-600 hover:bg-red-100'
-              : 'bg-green-50 text-green-600 hover:bg-green-100'
-          }`}
-        >
-          {isActive ? <><UserX className="h-3.5 w-3.5" /> Deactivate</> : <><UserCheck className="h-3.5 w-3.5" /> Activate</>}
-        </button>
+        <>
+          <button
+            onClick={() =>
+              call(
+                { action: 'toggleActive' },
+                isActive
+                  ? 'Deactivate this account? They will not be able to log in.'
+                  : 'Reactivate this account?'
+              )
+            }
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${
+              isActive
+                ? 'bg-orange-50 text-orange-600 hover:bg-orange-100'
+                : 'bg-green-50 text-green-600 hover:bg-green-100'
+            }`}
+          >
+            {isActive ? (
+              <><UserX className="h-3.5 w-3.5" /> Deactivate</>
+            ) : (
+              <><UserCheck className="h-3.5 w-3.5" /> Activate</>
+            )}
+          </button>
+
+          <button
+            onClick={deleteAccount}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete
+          </button>
+        </>
       )}
     </div>
   );

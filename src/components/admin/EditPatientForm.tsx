@@ -13,6 +13,7 @@ type PatientData = {
   fullName: string;
   guardianName: string;
   age: number;
+  ageUnit: string;
   gender: string;
   cnicNumber: string;
   mobile: string;
@@ -77,7 +78,24 @@ export default function EditPatientForm({ patient }: { patient: PatientData }) {
         </div>
         <div>
           <Label className="text-slate-700 mb-2 block">Age</Label>
-          <Input type="number" value={form.ageUnit} onChange={(e) => set('ageUnit', Number(e.target.value))} className="h-11" required />
+          <div className="flex gap-2">
+            <Input
+              type="number"
+              value={form.age}
+              onChange={(e) => set('age', Number(e.target.value))}
+              className="h-11 flex-1"
+              required
+            />
+            <select
+              value={form.ageUnit}
+              onChange={(e) => set('ageUnit', e.target.value)}
+              className="h-11 rounded-xl border border-slate-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E5FA3]"
+            >
+              <option value="Days">Days</option>
+              <option value="Months">Months</option>
+              <option value="Years">Years</option>
+            </select>
+          </div>
         </div>
         <div>
           <Label className="text-slate-700 mb-2 block">Gender</Label>

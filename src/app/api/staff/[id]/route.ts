@@ -19,8 +19,8 @@ export async function PATCH(
     const { id } = await params;
     const { action, newPassword } = await req.json();
 
-    if (id === session.user.id && action === 'toggleActive') {
-      return NextResponse.json({ error: 'You cannot deactivate your own account' }, { status: 400 });
+    if (id === session.user.id && (action === 'toggleActive' || action === 'delete')) {
+      return NextResponse.json({ error: 'You cannot modify your own account this way' }, { status: 400 });
     }
 
     if (action === 'resetPassword') {
@@ -40,7 +40,6 @@ export async function PATCH(
     if (action === 'toggleActive') {
       const user = await prisma.user.findUnique({ where: { id } });
       if (!user) return NextResponse.json({ error: 'Account not found' }, { status: 404 });
-
       await prisma.user.update({ where: { id }, data: { isActive: !user.isActive } });
       await prisma.auditLog.create({
         data: {
@@ -51,6 +50,30 @@ export async function PATCH(
         },
       });
       return NextResponse.json({ success: true });
+    }
+
+    if (action === 'delete') {
+      const user = await prisma.user.findUnique({ where: { id } });
+      if (!user) return NextResponse.json({ error: 'Account not found' }, { status: 404 });
+
+      const patientsCreated = await prisma.patient.count({ where: { createdById: id } });
+      const patientsUpdated = await prisma.patient.count({ where: { updatedById: id } });
+
+      if (patientsCreated > 0 || patientsUpdated > 0) {
+        // This account created/edited real patient records — cannot safely delete.
+        // Patient records must keep a valid creator reference for legal/audit purposes.
+        return NextResponse.json(
+          { error: 'This account has patient records tied to it and cannot be permanently deleted. Deactivate it instead to preserve those records.' },
+          { status: 400 }
+        );
+      }
+
+      // No patient records depend on this account — safe to fully remove,
+      // including its login history, since nothing else references it.
+      await prisma.auditLog.deleteMany({ where: { userId: id } });
+      await prisma.user.delete({ where: { id } });
+
+      return NextResponse.json({ success: true, permanentlyDeleted: true });
     }
 
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 });

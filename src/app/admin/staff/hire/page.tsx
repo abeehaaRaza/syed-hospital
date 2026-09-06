@@ -1,8 +1,15 @@
 import { prisma } from '@/lib/prisma';
 import HireStaffForm from '@/components/admin/HireStaffForm';
-import { Users } from 'lucide-react';
+import EmployeeRowActions from '@/components/admin/EmployeeRowActions';
+import Link from 'next/link';
 
 export const metadata = { title: 'Hospital Staff · Syed Hospital' };
+
+const statusColors: Record<string, string> = {
+  Active: 'bg-green-50 text-green-700',
+  'On Leave': 'bg-amber-50 text-amber-700',
+  Left: 'bg-slate-100 text-slate-500',
+};
 
 export default async function HireStaffPage() {
   const employees = await prisma.employee.findMany({ orderBy: { fullName: 'asc' } });
@@ -28,20 +35,28 @@ export default async function HireStaffPage() {
                   <th className="px-6 py-4 font-semibold">Shift</th>
                   <th className="px-6 py-4 font-semibold">Joining Date</th>
                   <th className="px-6 py-4 font-semibold">Status</th>
+                  <th className="px-6 py-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {employees.map((e) => (
-                  <tr key={e.id} className="border-b border-slate-50 last:border-0">
-                    <td className="px-6 py-4 font-medium text-slate-800">{e.fullName}</td>
+                  <tr key={e.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
+                    <td className="px-6 py-4">
+                      <Link href={`/admin/staff/hire/${e.id}`} className="font-medium text-[#2E5FA3] hover:underline">
+                        {e.fullName}
+                      </Link>
+                    </td>
                     <td className="px-6 py-4 text-slate-600">{e.designation}</td>
                     <td className="px-6 py-4 text-slate-500">{e.department || '—'}</td>
                     <td className="px-6 py-4 text-slate-500">{e.shift}</td>
                     <td className="px-6 py-4 text-slate-500">{new Date(e.joiningDate).toLocaleDateString('en-GB')}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${e.isActive ? 'bg-green-50 text-green-600' : 'bg-slate-100 text-slate-500'}`}>
-                        {e.isActive ? 'Active' : 'Inactive'}
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[e.employmentStatus] ?? statusColors.Active}`}>
+                        {e.employmentStatus}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <EmployeeRowActions id={e.id} isActive={e.isActive} />
                     </td>
                   </tr>
                 ))}

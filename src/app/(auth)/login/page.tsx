@@ -8,7 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
 import { Eye, EyeOff, Loader2, Lock, User } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -47,7 +46,19 @@ export default function LoginPage() {
       return;
     }
 
-    router.push('/admin/dashboard');
+    // Fetch the session to get the role and redirect correctly
+    const sessionRes = await fetch('/api/auth/session');
+    const session = await sessionRes.json();
+    const role = session?.user?.role;
+
+    if (role === 'ADMIN') {
+      router.push('/admin/dashboard');
+    } else if (role === 'HR') {
+      router.push('/hr/dashboard');
+    } else {
+      router.push('/reception/dashboard');
+    }
+
     router.refresh();
   }
 
@@ -55,7 +66,6 @@ export default function LoginPage() {
     <div className="min-h-screen flex bg-slate-50">
       {/* LEFT — Branded panel */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-[#1E3A6E] via-[#2E5FA3] to-[#3B7DD8]">
-        {/* Subtle ECG line motif */}
         <svg
           className="absolute bottom-24 left-0 w-full opacity-20"
           viewBox="0 0 400 60"
@@ -69,11 +79,8 @@ export default function LoginPage() {
             fill="none"
           />
         </svg>
-
-        {/* Soft glow circles */}
         <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full bg-white/5 blur-3xl" />
-
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           <div className="mb-8 bg-white rounded-2xl p-4 w-fit shadow-lg">
             <Image
@@ -100,7 +107,6 @@ export default function LoginPage() {
       {/* RIGHT — Login form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          {/* Mobile logo (shown only on small screens) */}
           <div className="lg:hidden flex justify-center mb-8">
             <Image
               src="/hos.png"
@@ -114,13 +120,10 @@ export default function LoginPage() {
 
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-slate-900">Welcome back</h2>
-            <p className="text-slate-500 mt-1">
-              Sign in to access your portal
-            </p>
+            <p className="text-slate-500 mt-1">Sign in to access your portal</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {/* Username */}
             <div className="space-y-2">
               <Label htmlFor="username" className="text-slate-700">
                 Username
@@ -141,7 +144,6 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-slate-700">
                 Password
@@ -174,14 +176,12 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* Auth error */}
             {authError && (
               <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
                 {authError}
               </div>
             )}
 
-            {/* Submit */}
             <Button
               type="submit"
               disabled={isSubmitting}
