@@ -44,6 +44,8 @@ const services = [
 type SuccessResult = {
   mrNumber: string;
   patientName: string;
+  patientAge: number;
+  patientAgeUnit: string;
   isFollowUp: boolean;
   visitNumber: number;
   tokenNumber: number;
@@ -94,6 +96,8 @@ export default function NewPatientPage() {
       setSuccess({
         mrNumber: result.mrNumber,
         patientName: result.patientName,
+        patientAge: result.patientAge,
+        patientAgeUnit: result.patientAgeUnit,
         isFollowUp: result.isFollowUp,
         visitNumber: result.visitNumber,
         tokenNumber: result.tokenNumber,
@@ -128,6 +132,8 @@ export default function NewPatientPage() {
         .line { border-top: 1px dashed #000; margin: 8px 0; }
         .token-label { font-size: 10px; margin-top: 6px; }
         .token { font-size: 46px; font-weight: bold; line-height: 1; margin: 2px 0 8px; }
+        .name { font-size: 20px; font-weight: bold; margin: 4px 0 2px; }
+        .age { font-size: 13px; margin: 0 0 6px; color: #333; }
         .row { font-size: 12px; margin: 3px 0; }
         .mr { font-size: 14px; font-weight: bold; }
         .foot { font-size: 9px; margin-top: 10px; }
@@ -138,8 +144,9 @@ export default function NewPatientPage() {
         <div class="token-label">TOKEN NUMBER</div>
         <div class="token">${success.tokenNumber}</div>
         <div class="line"></div>
+        <div class="name">${success.patientName}</div>
+        <div class="age">Age: ${success.patientAge} ${success.patientAgeUnit}</div>
         <div class="row mr">MR: ${success.mrNumber}</div>
-        <div class="row">${success.patientName}</div>
         <div class="row">Visit #${success.visitNumber}</div>
         <div class="row">${now}</div>
         <div class="line"></div>
@@ -238,7 +245,6 @@ export default function NewPatientPage() {
               <Input id="guardianName" placeholder="Father/Husband name" className="h-11" {...register('guardianName')} />
             </div>
 
-            {/* AGE WITH UNIT */}
             <div>
               <Label htmlFor="age" className="text-slate-700 mb-2 block">Age *</Label>
               <div className="flex gap-2">
@@ -404,7 +410,9 @@ export default function NewPatientPage() {
             <h2 className="text-2xl font-extrabold font-heading text-[#0F2347] text-center">
               {success.isFollowUp ? 'Follow-up Recorded' : 'Patient Registered'}
             </h2>
-            <p className="text-slate-500 text-center mt-1">{success.patientName}</p>
+            <p className="text-slate-500 text-center mt-1">
+              {success.patientName} · {success.patientAge} {success.patientAgeUnit}
+            </p>
 
             {/* Queue Token */}
             <div className="mt-6 bg-[#1E3A6E] rounded-2xl p-5 text-center text-white">

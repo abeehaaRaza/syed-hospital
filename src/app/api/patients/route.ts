@@ -21,6 +21,7 @@ export async function POST(req: Request) {
       minute: '2-digit',
       hour12: true,
     });
+
     const visitDateTime = now.toLocaleString('en-GB', {
       timeZone: 'Asia/Karachi',
       day: '2-digit',
@@ -69,7 +70,6 @@ export async function POST(req: Request) {
       patientId = existing.id;
       isFollowUp = true;
 
-      // Update their latest details (in case something changed)
       await prisma.patient.update({
         where: { id: existing.id },
         data: {
@@ -149,10 +149,12 @@ export async function POST(req: Request) {
       },
     });
 
-   return NextResponse.json({
+    return NextResponse.json({
       success: true,
       mrNumber,
       patientName: data.fullName,
+      patientAge: data.age,
+      patientAgeUnit: data.ageUnit || 'Years',
       isFollowUp,
       visitNumber,
       tokenNumber,
