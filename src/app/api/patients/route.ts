@@ -32,12 +32,11 @@ export async function POST(req: Request) {
       hour12: true,
     });
 
-    // Build a list of identifiers to match a returning patient by:
-    // patient CNIC, patient mobile, guardian CNIC, guardian mobile
     const cnic = data.cnicNumber?.trim() || null;
     const mobile = data.mobile?.trim() || null;
     const gCnic = data.guardianCnic?.trim() || null;
     const gMobile = data.guardianMobile?.trim() || null;
+    const assignedDoctorId = data.assignedDoctorId?.trim() || null;
 
     let existing = null;
 
@@ -64,7 +63,6 @@ export async function POST(req: Request) {
     let isFollowUp = false;
 
     if (existing) {
-      // Returning patient — reuse their permanent MR number
       mrNumber = existing.mrNumber;
       patientCount = existing.patientCount;
       patientId = existing.id;
@@ -79,13 +77,13 @@ export async function POST(req: Request) {
           fee: data.fee ? Number(data.fee) : null,
           disposal: data.disposal || null,
           details: data.details || null,
+          assignedDoctorId: assignedDoctorId,
           visitDate: now,
           visitTime,
           updatedById: session.user.id,
         },
       });
     } else {
-      // New patient — generate a fresh MR number
       const generated = await generateMRNumber(data.department as DepartmentType, now);
       mrNumber = generated.mrNumber;
       patientCount = generated.patientCount;
@@ -107,6 +105,7 @@ export async function POST(req: Request) {
           department: data.department as DepartmentType,
           registerType: data.serviceRequired,
           serviceRequired: data.serviceRequired,
+          assignedDoctorId: assignedDoctorId,
           patientCount,
           visitTime,
           consentGiven: data.consentGiven ?? false,
@@ -119,7 +118,6 @@ export async function POST(req: Request) {
       patientId = patient.id;
     }
 
-    // Count existing visits for this patient, then create the next visit
     const priorVisits = await prisma.visit.count({ where: { patientId } });
     const visitNumber = priorVisits + 1;
 
@@ -130,10 +128,10 @@ export async function POST(req: Request) {
         department: data.department as DepartmentType,
         serviceRequired: data.serviceRequired,
         reason: data.details || null,
+        doctorId: assignedDoctorId,
       },
     });
 
-    // Generate a daily queue token and save it to the patient
     const tokenNumber = await generateTokenNumber();
     await prisma.patient.update({
       where: { id: patientId },

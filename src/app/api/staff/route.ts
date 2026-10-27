@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { Role } from '@prisma/client';
+import { Role, DoctorSpecialty } from '@prisma/client';
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -11,11 +11,10 @@ export async function POST(req: Request) {
   }
   if (session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Only an administrator can create accounts' }, { status: 403 });
-  } 
-  
+  }
 
   try {
-    const { fullName, username, email, password, role } = await req.json();
+    const { fullName, username, email, password, role, specialty, qualification, pmdcNumber } = await req.json();
 
     if (!fullName || !username || !email || !password || password.length < 8) {
       return NextResponse.json(
@@ -31,11 +30,10 @@ export async function POST(req: Request) {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Correctly map all three roles
     let assignedRole: Role = Role.RECEPTIONIST;
     if (role === 'ADMIN') assignedRole = Role.ADMIN;
     else if (role === 'HR') assignedRole = Role.HR;
-    else assignedRole = Role.RECEPTIONIST;
+    else if (role === 'DOCTOR') assignedRole = Role.DOCTOR;
 
     const user = await prisma.user.create({
       data: {
@@ -44,13 +42,16 @@ export async function POST(req: Request) {
         email,
         passwordHash,
         role: assignedRole,
+        specialty: assignedRole === Role.DOCTOR ? (specialty as DoctorSpecialty) : null,
+        qualification: assignedRole === Role.DOCTOR ? qualification : null,
+        pmdcNumber: assignedRole === Role.DOCTOR ? pmdcNumber : null,
       },
     });
 
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
-        action: 'STAFF_CREATE',
+        action: assignedRole === Role.DOCTOR ? 'DOCTOR_CREATE' : 'STAFF_CREATE',
         entityType: 'User',
         entityId: user.id,
       },

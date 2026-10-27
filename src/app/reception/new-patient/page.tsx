@@ -1,7 +1,7 @@
 'use client';
 
 import PhotoUpload from '@/components/reception/PhotoUpload';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -28,6 +28,7 @@ const patientSchema = z.object({
   address: z.string().min(3, 'Address is required'),
   department: z.enum(['ER', 'OPD', 'IND']),
   serviceRequired: z.string().min(1, 'Select a service'),
+  assignedDoctorId: z.string().optional(),
   fee: z.coerce.number().optional(),
   consentGiven: z.boolean(),
   disposal: z.string().optional(),
@@ -52,11 +53,28 @@ type SuccessResult = {
   visitDateTime: string;
 };
 
+type Doctor = {
+  id: string;
+  fullName: string;
+  specialty: string | null;
+  qualification: string | null;
+};
+
 export default function NewPatientPage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<SuccessResult | null>(null);
   const [copied, setCopied] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+
+  useEffect(() => {
+    fetch('/api/doctors')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setDoctors(data);
+      })
+      .catch(err => console.error('Failed to load doctors', err));
+  }, []);
 
   const {
     register,
@@ -197,21 +215,38 @@ export default function NewPatientPage() {
                 ))}
               </div>
             </div>
-            <div>
-              <Label htmlFor="serviceRequired" className="text-slate-700 mb-2 block">Service Required</Label>
-              <select
-                id="serviceRequired"
-                {...register('serviceRequired')}
-                className="w-full h-11 rounded-xl border border-slate-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E5FA3]"
-              >
-                <option value="">Select a service...</option>
-                {services.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-              {errors.serviceRequired && (
-                <p className="text-sm text-red-500 mt-1">{errors.serviceRequired.message}</p>
-              )}
+            <div className="grid sm:grid-cols-2 gap-5">
+              <div>
+                <Label htmlFor="serviceRequired" className="text-slate-700 mb-2 block">Service Required</Label>
+                <select
+                  id="serviceRequired"
+                  {...register('serviceRequired')}
+                  className="w-full h-11 rounded-xl border border-slate-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E5FA3]"
+                >
+                  <option value="">Select a service...</option>
+                  {services.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                {errors.serviceRequired && (
+                  <p className="text-sm text-red-500 mt-1">{errors.serviceRequired.message}</p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="assignedDoctorId" className="text-slate-700 mb-2 block">Assign Doctor / Consultant (Optional)</Label>
+                <select
+                  id="assignedDoctorId"
+                  {...register('assignedDoctorId')}
+                  className="w-full h-11 rounded-xl border border-slate-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E5FA3]"
+                >
+                  <option value="">Select Doctor...</option>
+                  {doctors.map((doc) => (
+                    <option key={doc.id} value={doc.id}>
+                      {doc.fullName} ({doc.specialty?.replace('_', ' ')})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -397,7 +432,7 @@ export default function NewPatientPage() {
 
       {/* SUCCESS MODAL */}
       {success && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative">
             <button onClick={registerAnother} className="absolute top-5 right-5 text-slate-400 hover:text-slate-600" aria-label="Close">
               <X className="h-5 w-5" />
@@ -414,13 +449,11 @@ export default function NewPatientPage() {
               {success.patientName} · {success.patientAge} {success.patientAgeUnit}
             </p>
 
-            {/* Queue Token */}
             <div className="mt-6 bg-[#1E3A6E] rounded-2xl p-5 text-center text-white">
               <p className="text-xs text-blue-200 uppercase tracking-wide mb-1">Queue Token Number</p>
               <p className="text-5xl font-extrabold tracking-wide">{success.tokenNumber}</p>
             </div>
 
-            {/* MR number */}
             <div className="mt-4 bg-[#EFF6FF] rounded-2xl p-5 text-center ring-1 ring-[#2E5FA3]/10">
               <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Medical Record Number</p>
               <p className="text-2xl font-mono font-bold text-[#1E3A6E] tracking-wide">{success.mrNumber}</p>

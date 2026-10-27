@@ -11,23 +11,38 @@ enum Role {
   ADMIN
   RECEPTIONIST
   HR
+  DOCTOR
+}
+
+enum DoctorSpecialty {
+  GENERAL_PHYSICIAN
+  OPHTHALMOLOGY
+  GYNECOLOGY
+  PEDIATRICS
+  SURGERY
 }
 
 model User {
-  id           String    @id @default(cuid())
-  username     String    @unique
-  email        String?   @unique
-  passwordHash String
-  fullName     String
-  role         Role
-  isActive     Boolean   @default(true)
-  lastLogin    DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id            String           @id @default(cuid())
+  username      String           @unique
+  email         String?          @unique
+  passwordHash  String
+  fullName      String
+  role          Role
+  specialty     DoctorSpecialty?
+  qualification String?
+  pmdcNumber    String?
+  isActive      Boolean          @default(true)
+  lastLogin     DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
-  createdPatients Patient[]  @relation("CreatedBy")
-  updatedPatients Patient[]  @relation("UpdatedBy")
-  auditLogs       AuditLog[]
+  createdPatients  Patient[]      @relation("CreatedBy")
+  updatedPatients  Patient[]      @relation("UpdatedBy")
+  assignedPatients Patient[]      @relation("AssignedDoctor")
+  doctorVisits     Visit[]        @relation("DoctorVisits")
+  prescriptions    Prescription[] @relation("DoctorPrescriptions")
+  auditLogs        AuditLog[]
 }
 
 // ===== PATIENTS =====
@@ -45,68 +60,80 @@ enum PatientStatus {
 }
 
 model Patient {
-  id             String         @id @default(cuid())
-  mrNumber       String         @unique
-  fullName       String
- guardianName   String?
-  guardianCnic   String?
-  guardianMobile String?
-    age            Int
-  ageUnit        String    @default("Years")
-  gender         String
-  dateOfBirth    DateTime?
-  cnicNumber     String?
-  mobile         String
-  address        String         @db.Text
-  photoUrl       String?
-  department     DepartmentType
-  registerType   String
+  id              String         @id @default(cuid())
+  mrNumber        String         @unique
+  fullName        String
+  guardianName    String?
+  guardianCnic    String?
+  guardianMobile  String?
+  age             Int
+  ageUnit         String         @default("Years")
+  gender          String
+  dateOfBirth     DateTime?
+  cnicNumber      String?
+  mobile          String
+  address         String         @db.Text
+  photoUrl        String?
+  department      DepartmentType
+  registerType    String
   serviceRequired String?
-  patientCount   Int
-  status         PatientStatus  @default(ACTIVE)
-  isVisible      Boolean        @default(true)
-  visitDate      DateTime       @default(now())
-  visitTime      String
-  tokenNumber    Int?
-  consentAt      DateTime?
-  followUpDate   DateTime?
-  followUpReason String?
-  followUpDone   Boolean   @default(false)
-  patientComment String?        @db.Text
-  consentGiven   Boolean        @default(false)
-  disposal       String?
-  fee            Int?
-  details        String?        @db.Text
-  createdById    String
-  createdBy      User           @relation("CreatedBy", fields: [createdById], references: [id])
-  updatedById    String?
-  updatedBy      User?          @relation("UpdatedBy", fields: [updatedById], references: [id])
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  archivedAt     DateTime?
+  patientCount    Int
+  status          PatientStatus  @default(ACTIVE)
+  isVisible       Boolean        @default(true)
+  visitDate       DateTime       @default(now())
+  visitTime       String
+  tokenNumber     Int?
+  consentAt       DateTime?
+  followUpDate    DateTime?
+  followUpReason  String?
+  followUpDone    Boolean        @default(false)
+  patientComment  String?        @db.Text
+  consentGiven    Boolean        @default(false)
+  disposal        String?
+  fee             Int?
+  details         String?        @db.Text
+  
+  createdById     String
+  createdBy       User           @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedById     String?
+  updatedBy       User?          @relation("UpdatedBy", fields: [updatedById], references: [id])
+  
+  assignedDoctorId String?
+  assignedDoctor   User?         @relation("AssignedDoctor", fields: [assignedDoctorId], references: [id])
 
-  visits    Visit[]
-  documents PatientDocument[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  archivedAt      DateTime?
+
+  visits          Visit[]
+  documents       PatientDocument[]
+  prescriptions   Prescription[]
 
   @@index([mrNumber])
   @@index([department, visitDate])
   @@index([status])
+  @@index([assignedDoctorId, visitDate])
 }
 
 model Visit {
-  id           String    @id @default(cuid())
-  patientId    String
-  patient      Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  visitNumber  Int       @default(1)
-  visitDate    DateTime  @default(now())
-  department   DepartmentType
+  id              String         @id @default(cuid())
+  patientId       String
+  patient         Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  visitNumber     Int            @default(1)
+  visitDate       DateTime       @default(now())
+  department      DepartmentType
   serviceRequired String?
-  reason       String?
-  diagnosis    String?   @db.Text
-  prescription String?   @db.Text
-  doctorNotes  String?   @db.Text
-  followUpDate DateTime?
-  createdAt    DateTime  @default(now())
+  reason          String?
+  diagnosis       String?        @db.Text
+  prescription    String?        @db.Text
+  doctorNotes     String?        @db.Text
+  followUpDate    DateTime?
+  
+  doctorId        String?
+  doctor          User?          @relation("DoctorVisits", fields: [doctorId], references: [id])
+  createdAt       DateTime       @default(now())
+
+  prescriptions   Prescription[]
 
   @@index([patientId, visitNumber])
 }
@@ -155,7 +182,7 @@ model Appointment {
   updatedAt     DateTime          @updatedAt
 }
 
-// ===== AUDIT LOG (legal protection) =====
+// ===== AUDIT LOG =====
 model AuditLog {
   id         String   @id @default(cuid())
   userId     String
@@ -170,7 +197,7 @@ model AuditLog {
   @@index([userId, createdAt])
 }
 
-// ===== DEPARTMENTS (public site) =====
+// ===== DEPARTMENTS =====
 model Department {
   id           String  @id @default(cuid())
   name         String
@@ -180,45 +207,46 @@ model Department {
   displayOrder Int     @default(0)
   isActive     Boolean @default(true)
 }
+
 model TokenCounter {
-  id           String   @id @default(cuid())
-  date         String   @unique
-  currentCount Int      @default(0)
+  id           String @id @default(cuid())
+  date         String @unique
+  currentCount Int    @default(0)
 }
 
+// ===== HR MODULE =====
 model HospitalLicense {
-  id             String    @id @default(cuid())
-  name           String    @unique
-  issuanceDate   DateTime?
-  expiryDate     DateTime?
-  rackLocation   String?
-  documentUrl    String?
-  notes          String?   @db.Text
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  history        LicenseHistory[]
-  notifications  LicenseNotification[]
+  id            String                @id @default(cuid())
+  name          String                @unique
+  issuanceDate  DateTime?
+  expiryDate    DateTime?
+  rackLocation  String?
+  documentUrl   String?
+  notes         String?               @db.Text
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  history       LicenseHistory[]
+  notifications LicenseNotification[]
 }
 
 model LicenseHistory {
-  id          String          @id @default(cuid())
-  licenseId   String
-  license     HospitalLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  id           String          @id @default(cuid())
+  licenseId    String
+  license      HospitalLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
   issuanceDate DateTime
-  expiryDate  DateTime
-  documentUrl String?
-  notes       String?         @db.Text
-  recordedAt  DateTime        @default(now())
+  expiryDate   DateTime
+  documentUrl  String?
+  notes        String?         @db.Text
+  recordedAt   DateTime        @default(now())
 }
 
 model LicenseNotification {
-  id          String          @id @default(cuid())
-  licenseId   String
-  license     HospitalLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
-  message     String          @db.Text
-  isRead      Boolean         @default(false)
-  createdAt   DateTime        @default(now())
+  id        String          @id @default(cuid())
+  licenseId String
+  license   HospitalLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  message   String          @db.Text
+  isRead    Boolean         @default(false)
+  createdAt DateTime        @default(now())
 }
 
 model Employee {
@@ -238,19 +266,51 @@ model Employee {
   leftDate         DateTime?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
-
-  attendance   Attendance[]
+  attendance       Attendance[]
 }
+
 model Attendance {
-  id          String    @id @default(cuid())
-  employeeId  String
-  employee    Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  date        String
-  status      String
-  checkIn     String?
-  checkOut    String?
-  notes       String?
-  createdAt   DateTime  @default(now())
+  id         String   @id @default(cuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date       String
+  status     String
+  checkIn    String?
+  checkOut   String?
+  notes      String?
+  createdAt  DateTime @default(now())
 
   @@unique([employeeId, date])
+}
+
+// ===== PRESCRIPTIONS =====
+enum ConsultationStatus {
+  WAITING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Prescription {
+  id               String             @id @default(cuid())
+  patientId        String
+  patient          Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  visitId          String?
+  visit            Visit?             @relation(fields: [visitId], references: [id], onDelete: SetNull)
+  doctorId         String
+  doctor           User               @relation("DoctorPrescriptions", fields: [doctorId], references: [id])
+  templateType     DoctorSpecialty
+  status           ConsultationStatus @default(COMPLETED)
+  
+  vitals           Json?              
+  clinicalFindings Json?             
+  diagnosis        String?            @db.Text
+  medications      Json?              
+  instructions     String?            @db.Text
+  followUpDays     Int?
+  
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([patientId])
+  @@index([doctorId, createdAt])
 }

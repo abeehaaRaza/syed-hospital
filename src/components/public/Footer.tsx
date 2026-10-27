@@ -71,9 +71,15 @@ export default function Footer() {
           <p className="text-sm text-blue-200/60">
             © {new Date().getFullYear()} Syed Hospital. All rights reserved.
           </p>
-          <Link href="/login" className="text-xs text-blue-200/40 hover:text-blue-200/80 transition-colors">
-            Staff Portal
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="text-xs text-blue-200/60 hover:text-white transition-colors">
+              Staff Portal
+            </Link>
+            <span className="text-blue-200/30">·</span>
+            <Link href="/login" className="text-xs text-blue-200/60 hover:text-white transition-colors">
+              Doctor Portal
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

@@ -31,11 +31,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { id: user.id },
           data: { lastLogin: new Date() },
         });
+        
         await prisma.auditLog.create({
           data: { userId: user.id, action: 'LOGIN', entityType: 'User', entityId: user.id },
         });
 
-        return { id: user.id, name: user.fullName, email: user.email, role: user.role };
+        return { 
+          id: user.id, 
+          name: user.fullName, 
+          email: user.email, 
+          role: user.role,
+          specialty: user.specialty,
+          qualification: user.qualification,
+          pmdcNumber: user.pmdcNumber
+        };
       },
     }),
   ],

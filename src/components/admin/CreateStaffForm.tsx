@@ -21,6 +21,9 @@ export default function CreateStaffForm() {
     email: '',
     password: '',
     role: 'RECEPTIONIST',
+    specialty: 'GENERAL_PHYSICIAN',
+    qualification: '',
+    pmdcNumber: '',
   });
 
   function set(field: string, value: string) {
@@ -51,6 +54,9 @@ export default function CreateStaffForm() {
           email: '',
           password: '',
           role: 'RECEPTIONIST',
+          specialty: 'GENERAL_PHYSICIAN',
+          qualification: '',
+          pmdcNumber: '',
         });
         router.refresh();
       }
@@ -69,7 +75,7 @@ export default function CreateStaffForm() {
           <h2 className="text-lg font-bold text-[#1E3A6E]">Account created</h2>
         </div>
         <p className="text-sm text-slate-600 mb-4">
-          Give these credentials to the staff member. This password will not be shown again.
+          Give these credentials to the staff/doctor member. This password will not be shown again.
         </p>
         <div className="bg-[#EFF6FF] rounded-xl p-5 ring-1 ring-[#2E5FA3]/10 space-y-2">
           <p className="text-sm">
@@ -91,6 +97,8 @@ export default function CreateStaffForm() {
                 ? 'Administrator'
                 : created.role === 'HR'
                 ? 'HR Officer'
+                : created.role === 'DOCTOR'
+                ? 'Doctor / Consultant'
                 : 'Receptionist'}
             </span>
           </p>
@@ -123,7 +131,7 @@ export default function CreateStaffForm() {
     >
       <h2 className="flex items-center gap-2 text-lg font-bold text-[#1E3A6E] mb-5">
         <UserPlus className="h-5 w-5 text-[#2E5FA3]" />
-        Create Staff Account
+        Create Account
       </h2>
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
@@ -131,7 +139,7 @@ export default function CreateStaffForm() {
           <Input
             value={form.fullName}
             onChange={(e) => set('fullName', e.target.value)}
-            placeholder="Staff member's name"
+            placeholder="e.g. Dr. Muhammad Ejaz"
             className="h-11"
             required
           />
@@ -141,7 +149,7 @@ export default function CreateStaffForm() {
           <Input
             value={form.username}
             onChange={(e) => set('username', e.target.value)}
-            placeholder="e.g. hr1 or reception1"
+            placeholder="e.g. drejaz"
             className="h-11"
             required
             minLength={3}
@@ -153,7 +161,7 @@ export default function CreateStaffForm() {
             type="email"
             value={form.email}
             onChange={(e) => set('email', e.target.value)}
-            placeholder="staff@syedhospital.com"
+            placeholder="doctor@syedhospital.com"
             className="h-11"
             required
           />
@@ -171,7 +179,7 @@ export default function CreateStaffForm() {
             minLength={8}
           />
         </div>
-        <div>
+        <div className="sm:col-span-2">
           <Label className="text-slate-700 mb-2 block">Role *</Label>
           <select
             value={form.role}
@@ -179,14 +187,48 @@ export default function CreateStaffForm() {
             className="w-full h-11 rounded-xl border border-slate-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E5FA3]"
           >
             <option value="RECEPTIONIST">Receptionist</option>
+            <option value="DOCTOR">Doctor / Consultant</option>
             <option value="HR">HR Officer</option>
             <option value="ADMIN">Administrator</option>
           </select>
-          <p className="text-xs text-slate-400 mt-1">
-            HR Officers manage licenses and staff attendance. Administrators
-            have full access.
-          </p>
         </div>
+
+        {form.role === 'DOCTOR' && (
+          <>
+            <div>
+              <Label className="text-slate-700 mb-2 block">Specialty / Template Type *</Label>
+              <select
+                value={form.specialty}
+                onChange={(e) => set('specialty', e.target.value)}
+                className="w-full h-11 rounded-xl border border-slate-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E5FA3]"
+              >
+                <option value="GENERAL_PHYSICIAN">General Physician (OPD Template)</option>
+                <option value="OPHTHALMOLOGY">Ophthalmology (Eye Slip Template)</option>
+                <option value="GYNECOLOGY">Gynecology</option>
+                <option value="PEDIATRICS">Pediatrics</option>
+                <option value="SURGERY">General Surgery</option>
+              </select>
+            </div>
+            <div>
+              <Label className="text-slate-700 mb-2 block">Qualifications</Label>
+              <Input
+                value={form.qualification}
+                onChange={(e) => set('qualification', e.target.value)}
+                placeholder="e.g. M.B.B.S., FCPS"
+                className="h-11"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label className="text-slate-700 mb-2 block">PMDC / PMC Reg. Number</Label>
+              <Input
+                value={form.pmdcNumber}
+                onChange={(e) => set('pmdcNumber', e.target.value)}
+                placeholder="e.g. 33776-P"
+                className="h-11"
+              />
+            </div>
+          </>
+        )}
       </div>
       <div className="flex justify-end mt-6">
         <Button

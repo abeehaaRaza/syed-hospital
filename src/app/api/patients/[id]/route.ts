@@ -2,6 +2,43 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
+  }
+
+  try {
+    const { id } = await params;
+    const patient = await prisma.patient.findUnique({
+      where: { id },
+      include: {
+        visits: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+        prescriptions: {
+          where: { doctorId: session.user.id },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        }
+      },
+    });
+
+    if (!patient) {
+      return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(patient);
+  } catch (error) {
+    console.error('Fetch patient error:', error);
+    return NextResponse.json({ error: 'Could not fetch patient' }, { status: 500 });
+  }
+}
+
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

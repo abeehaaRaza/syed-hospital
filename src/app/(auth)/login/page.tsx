@@ -55,6 +55,8 @@ export default function LoginPage() {
       router.push('/admin/dashboard');
     } else if (role === 'HR') {
       router.push('/hr/dashboard');
+    } else if (role === 'DOCTOR') {
+      router.push('/doctor/dashboard'); // <-- FIX: Doctors now go to their portal!
     } else {
       router.push('/reception/dashboard');
     }

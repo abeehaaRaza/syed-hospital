@@ -137,3 +137,21 @@
     @apply font-sans scroll-smooth;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  body, html {
+    margin: 0;
+    padding: 0;
+    background-color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  /* Force hide anything we don't want */
+  .print\:hidden {
+    display: none !important;
+  }
+}
